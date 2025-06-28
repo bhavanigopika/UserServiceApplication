@@ -11,7 +11,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.swing.text.html.Option;
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.Period;
+import java.util.Date;
 import java.util.Optional;
 
 @Service
@@ -144,6 +147,25 @@ public class UserServiceImpl implements UserService {
         //Set the expiry date, then return back to the login page
         //don't set the user and make the tokenValue as null -> Not recommended this => token.setTokenValue(null);
         //Now,
+        //let's have a condition...if the user not login again till 1 year, then delete the account
+        /*
+        LocalDateTime now = LocalDateTime.now();//Get the current date and time
+        LocalDateTime expiryDateTime = token.getExpiryDateTime();//Get the expiry date and time
+        Duration duration = Duration.between(expiryDateTime, now);//calculate time part difference(hours, minutes, seconds)
+        Period period = Period.between(expiryDateTime.toLocalDate(), now.toLocalDate());//calculate the date part different(years, months, days)
+        long totalSeconds = duration.getSeconds();
+        long hours = (totalSeconds % (24 * 3600)) / 3600;
+        long minutes = (totalSeconds % 3600) / 60;
+        long seconds = totalSeconds % 60;
+        System.out.printf("Difference: %d years, %d months, %d days, %d hours, %d minutes, %d seconds\n",
+                period.getYears(), period.getMonths(), period.getDays(), hours, minutes, seconds);
+        */
+
+        //Checks if this date-time is before the specified date-time
+        if(token.getExpiryDateTime().isBefore(LocalDateTime.now())){
+            tokenRepository.delete(token);
+        }
+
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime thirtyDaysFromNow = now.plusDays(30);
 
