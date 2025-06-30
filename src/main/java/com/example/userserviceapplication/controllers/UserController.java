@@ -76,29 +76,29 @@ public class UserController {
         }
         return signUpResponseDto;
     */
-        //Let's upgrade the program
-        //Instead of set the username, email, responseStatus in userDto in userController class, set it everything in userDto class
-        //Also, if user is null, in that case, let's handle it in UserDto class
+        /*Let's upgrade the program
+        Instead of set the username, email, responseStatus in userDto in userController class, set it everything in userDto class
+        Also, if user is null, in that case, let's handle it in UserDto class*/
         User user = userService.signUp(signUpRequestDto.getUsername(), signUpRequestDto.getEmail(), signUpRequestDto.getPassword());
-        //return type is UserDto. So, create the userDto from  user object and then return it back to the client
-        //Converting from user to UserDto and return it back to the Client...
+        /*return type is UserDto. So, create the userDto from  user object and then return it back to the client
+        Converting from user to UserDto and return it back to the Client...*/
         return UserDto.from(user);
 
     }
 
     @PostMapping("/logout")
     public ResponseEntity<String> logout(@RequestBody LogoutRequestDto logoutRequestDto) {
-        //logout - logout means you invalidate the token / close the session / send back to the login page / delete the token not recommended because you to back trace
-        //save all the information(of course, you already saved when you log in actually) to keep backtrack if something wrong
+        /* logout - logout means you invalidate the token / close the session / send back to the login page / delete the token not recommended because you to back trace
+        save all the information(of course, you already saved when you log in actually) to keep backtrack if something wrong*/
 
-        //Just I want to return if the logout is successful or not, so I'll use ResponseEntity - This itself say HTTP status whether it is HTTPStatus.OK (or) NOTFOUND
-        //Here expire the token, once expired user redirected to login page and, he will ask to log in again (i.e) generated a new token and use this token for their related particular session
+        /*Just I want to return if the logout is successful or not, so I'll use ResponseEntity - This itself say HTTP status whether it is HTTPStatus.OK (or) NOTFOUND
+        Here expire the token, once expired user redirected to login page and, he will ask to log in again (i.e) generated a new token and use this token for their related particular session*/
         userService.logout(logoutRequestDto.getTokenValue());
-        //Use any return statement(see below), but understand the difference.
+        /*Use any return statement(see below), but understand the difference.
 
-        //return ResponseEntity.status(HttpStatus.OK).body("Logged out successfully");
-        //return ResponseEntity.noContent().build();
-        //return new ResponseEntity<>(HttpStatus.OK);
+        return ResponseEntity.status(HttpStatus.OK).body("Logged out successfully");
+        return ResponseEntity.noContent().build();
+        return new ResponseEntity<>(HttpStatus.OK);*/
         return ResponseEntity.ok("Expiry date is changed when logged out. It will be current expiry date and please check in token database table");//Here also, HTTP status is 200 OK
 
 
@@ -107,10 +107,10 @@ public class UserController {
     @GetMapping("/validate/{token}")//For validate the token, provide the token actually
     //Now, pass the parameter as @PathVariable
     public ResponseEntity<UserDto> validateToken(@PathVariable("token") String tokenValue){
-        //Return the ResponseEntity with UserDto
-        //if token is validated then return the particular user
-        //return type is UserDto. So, create the userDto from  user object and then return it back to the client
-        //Converting from user to UserDto and return it back to the Client...
+        /*Return the ResponseEntity with UserDto
+        if token is validated then return the particular user
+        return type is UserDto. So, create the userDto from  user object and then return it back to the client
+        Converting from user to UserDto and return it back to the Client...*/
         User user = userService.validateToken(tokenValue);
         if(user == null){
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);//resource not found. NOT_FOUND = 404
