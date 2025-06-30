@@ -27,6 +27,7 @@ public class UserServiceImpl implements UserService {
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.tokenRepository = tokenRepository;
     }
+/*
     @Override
     public Token login(String email, String password) throws InvalidPasswordException {
         //Once signup, user try to log in to issue token. Before that check if the user exist or not
@@ -39,19 +40,19 @@ public class UserServiceImpl implements UserService {
         }
         //if user found
         User user = userOptional.get();
-        /*once found, verify the password to authenticated
+        *//*once found, verify the password to authenticated
         verify the password which you entered and password in database
         bCryptPasswordEncoder have 2 functions encode(String) and matches(originalString, encodedString). Here, we are using matches because we have to verify and not to create new passowrd
-        If I give .encode then new password will create. So, provide .matches*/
+        If I give .encode then new password will create. So, provide .matches*//*
         if (!bCryptPasswordEncoder.matches(password, user.getPassword())){
-            /*
+            *//*
             if it is not matches, then login unsuccessful because this is not a valid user
             throw an exception to invalid password
             or if you try to log in 3 times as wrong, then block the login for 1 hr or 2 hr(some website shows). Not try to attempt for next 1 hr or 2 hr for extra security
             Front end not handle throw an exception. The throw exception handle it by global handler (i.e) @ControllerAdvice (or) controller to handle the exception(if you want)
             This controllerAdvice will send relevant message to client/user. Client will get the response like this
-            */
-            /*
+            *//*
+            *//*
             {
                response : {
                     success : ok,
@@ -59,19 +60,19 @@ public class UserServiceImpl implements UserService {
                }
             }
             //You can enter the log details(logging mechanism -> DEBUG, WARN, ERROR, INFO, TRACE, FATAL
-             */
+             *//*
             throw new InvalidPasswordException("The given password is invalid");
         }
 
         //once password match or valid, then issue the token to the user
         Token token = new Token();
-        /*store the token in your side or client side in the browser cache wherever and use it for subsequent request
+        *//*store the token in your side or client side in the browser cache wherever and use it for subsequent request
         next time when you want to call the product service to fetch the product then use this token and validate your identity and, you don't need to log in again and again
         One of the way to validate the token without even making a call to database is JWT(JSON Web Token)
         Now, we don't use JWT now(Refer notes to learn)
 
         So, generate random 128 digit token value. Use this dependency "Apache Commons Lang" to get RandomStringUtils
-        It creates 128 bit random string*/
+        It creates 128 bit random string*//*
         token.setTokenValue(RandomStringUtils.randomAlphanumeric(128));
         //already check the user and valid. See above...
         token.setUser(user);
@@ -83,13 +84,14 @@ public class UserServiceImpl implements UserService {
 
         //now save the token and return it. Now, when I try to login once user signed up, token gets generatetd
 
-        /*Token savedToken = tokenRepository.save(token);
-        return savedToken;*/
+        *//*Token savedToken = tokenRepository.save(token);
+        return savedToken;*//*
         //or
         return tokenRepository.save(token);
 
     }
-
+*/
+    //To learn jwt, let's have signUp method only...So, I comment others...
     @Override
     public User signUp(String username, String email, String password) {
         /*Don't use this here -> BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
@@ -118,17 +120,47 @@ public class UserServiceImpl implements UserService {
 
     }
 
+    //authenticate the user if password match or not
+    @Override
+    public User authenticateUser(String email, String password) {
+        //check if the user exist or not. If user not authenticate, then return null
+        Optional<User> userOptional = userRepository.findByEmail(email);
+        if (userOptional.isEmpty()) {
+            return null;
+        }
+        //check password matches in order to authenticate the user
+        User user = userOptional.get();
+        //if bcrypt password not match
+        if(!bCryptPasswordEncoder.matches(password, user.getPassword())) {
+            return null;
+        }
+        //else bcrypt password matches, then return user
+        return user;
+    }
+
+    @Override
+    public User getUserByEmail(String email) {
+        //return the user if email found else return null
+        return userRepository.findByEmail(email).orElse(null);
+    }
+
+    /*
+
     @Override
     public void logout(String tokenValue) {
-        /*logout - logout means you can log in again but, you don't sign up till some particular days. Until that you extend the token.
+        */
+/*logout - logout means you can log in again but, you don't sign up till some particular days. Until that you extend the token.
         logout means may be you invalidate the token / close the session / send back to the login page / delete the token not recommended because to back trace
         save all the information(of course, you already saved when you log in actually) to keep backtrack if something wrong
 
         Just I want to return if the logout is successful or not, so I'll use ResponseEntity - This itself say HTTP status whether it is HTTPStatus.OK (or) NOTFOUND
-        Here expire the token, once expired user redirected to login page and, he will ask to log in again (i.e) generated a new token and use this token for their related particular session*/
-    /*  Implementation:
-        -> set the expiry date of the token to now and invalidating the token
+        Here expire the token, once expired user redirected to login page and, he will ask to log in again (i.e) generated a new token and use this token for their related particular session*//*
+
     */
+/*  Implementation:
+        -> set the expiry date of the token to now and invalidating the token
+    *//*
+
         Optional<Token> tokenOptional = tokenRepository.findByTokenValue(tokenValue);
         //logout means already he/she should be in the page. But let's check if the tokenValue is empty or not
         if (tokenOptional.isEmpty()) {
@@ -140,13 +172,16 @@ public class UserServiceImpl implements UserService {
         //So, first get the token
         Token token = tokenOptional.get();
 
-        /*You log out. Until the login, extend the expiry date. Currently, the token will be invalidated
+        */
+/*You log out. Until the login, extend the expiry date. Currently, the token will be invalidated
         Set the expiry date, then return back to the login page
         don't set the user and make the tokenValue as null -> Not recommended this => token.setTokenValue(null);
         Now,
-        let's have a condition...if the user not login again till 1 year, then delete the account*/
+        let's have a condition...if the user not login again till 1 year, then delete the account*//*
 
-        /*
+
+        */
+/*
         LocalDateTime now = LocalDateTime.now();//Get the current date and time
         LocalDateTime expiryDateTime = token.getExpiryDateTime();//Get the expiry date and time
         Duration duration = Duration.between(expiryDateTime, now);//calculate time part difference(hours, minutes, seconds)
@@ -157,7 +192,8 @@ public class UserServiceImpl implements UserService {
         long seconds = totalSeconds % 60;
         System.out.printf("Difference: %d years, %d months, %d days, %d hours, %d minutes, %d seconds\n",
                 period.getYears(), period.getMonths(), period.getDays(), hours, minutes, seconds);
-        */
+        *//*
+
 
         //Checks if this date-time is before the specified date-time
         if(token.getExpiryDateTime().isBefore(LocalDateTime.now())){
@@ -168,19 +204,24 @@ public class UserServiceImpl implements UserService {
         LocalDateTime thirtyDaysFromNow = now.plusDays(30);
 
         token.setExpiryDateTime(thirtyDaysFromNow);
-        /*Not recommended the following line...
+        */
+/*Not recommended the following line...
         token.setTokenValue(null);
         token.setUser(null);
 
         we don't want to make the user as null (i.e) token.setUser(null); because we want user to back trace
-        we want to set the expiry date of token from now and invalidate the token.*/
+        we want to set the expiry date of token from now and invalidate the token.*//*
+
 
         tokenRepository.save(token);
     }
+*/
 
+/*
     @Override
     public User validateToken(String tokenValue) {
-    /*
+    */
+/*
         Implementation:
 
         -> whenever the validateToken calls, then the token pass then we need to verify the token in the db or not
@@ -189,7 +230,8 @@ public class UserServiceImpl implements UserService {
         -> if expired, we redirect the user to login page and ask them to login again
         -> Check the token = if token expiry date > current date (i.e) It should be less than 30 days. That cover in "findByTokenValueAndExpiryDateTimeGreaterThan" in TokenRepository
         -> if not expired, get the token and from the token get the user because through validating the token we can get the user and send back to the client
-    */
+    *//*
+
 
         //token can be null as well. So, better use with optional of token
         Optional<Token> tokenOptional = tokenRepository.findByTokenValueAndExpiryDateTimeGreaterThan(tokenValue, LocalDateTime.now());
@@ -199,17 +241,22 @@ public class UserServiceImpl implements UserService {
             return null;
         }
 
-    /*
+    */
+/*
         Token token = tokenOptional.get();
         return token.getUser();
-    */
+    *//*
+
         //(or)
         //avoid tokenOptional.isEmpty in above code then return the following line
-    /*
-        return tokenOptional.map(Token::getUser).orElse(null);
     */
+/*
+        return tokenOptional.map(Token::getUser).orElse(null);
+    *//*
+
         //(or)
         return tokenOptional.get().getUser();
-     }
+    }
+*/
 
 }

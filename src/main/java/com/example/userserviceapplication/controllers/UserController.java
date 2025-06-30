@@ -14,6 +14,8 @@ import com.example.userserviceapplication.repositories.TokenRepository;
 import com.example.userserviceapplication.services.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -41,7 +43,8 @@ public class UserController {
 //    GET - fetch a resource
 //    Login is going to POST. Whenever you create a new resource then use PostMapping. Here, for login, you create a new resource (i.e) new token
 
-    @PostMapping("/login")
+    //to learn jwt, remove login
+/*    @PostMapping("/login")
     public LoginResponseDto login(@RequestBody LoginRequestDto loginRequestDto) throws InvalidPasswordException {
         LoginResponseDto loginResponseDto = new LoginResponseDto();
 
@@ -58,8 +61,12 @@ public class UserController {
         }
 
         return loginResponseDto;
-    }
+    }*/
 
+    //To learn jwt, let's have only signup -> check if user exist, if yes, then return UserDto
+    //All the authentication is now handled by jwt/oauth.
+    //Client must use OAuth flow to get jwt tokens (i.e) handled by configurations that we are provided
+    //I don't need to create tokens myself whenever I use login...(Earlier we did this)
     @PostMapping("/signup")
     public UserDto signUp(@RequestBody SignUpRequestDto signUpRequestDto) {
     /*
@@ -83,39 +90,60 @@ public class UserController {
         /*return type is UserDto. So, create the userDto from  user object and then return it back to the client
         Converting from user to UserDto and return it back to the Client...*/
         return UserDto.from(user);
-
     }
 
-    @PostMapping("/logout")
-    public ResponseEntity<String> logout(@RequestBody LogoutRequestDto logoutRequestDto) {
-        /* logout - logout means you invalidate the token / close the session / send back to the login page / delete the token not recommended because you to back trace
-        save all the information(of course, you already saved when you log in actually) to keep backtrack if something wrong*/
+    //Let's have more APIs on top of this to test
+    @GetMapping("/profile")
+    public ResponseEntity<UserDto> getProfile(JwtAuthenticationToken jwtAuthenticationToken) {
+        //pass jwt authentication token here, which expect from user
+        //jwt is self validating token, so get a name
+        //Using authentication token, I should get user email
+        //authentication token have A.B.C -> A= header, B = payload(store the user details), C = signature
 
-        /*Just I want to return if the logout is successful or not, so I'll use ResponseEntity - This itself say HTTP status whether it is HTTPStatus.OK (or) NOTFOUND
-        Here expire the token, once expired user redirected to login page and, he will ask to log in again (i.e) generated a new token and use this token for their related particular session*/
+        String userEmail = jwtAuthenticationToken.getName();
+        User user = userService.getUserByEmail(userEmail);
+        return ResponseEntity.ok(UserDto.from(user));
+    }
+
+    //let's have one more API that is Admin end point. Return string just to demonstrate so not user service
+    //In security config, you already mentioned that anything starts with /users/admin/** then it should have authority "SCOPE_ADMIN", then only you allow it
+    //(i.e) .requestMatchers("/users/admin/**").hasAuthority("SCOPE_ADMIN") -> so you preauthorize, if they have this, one will be able to access this endpoint
+    @GetMapping("/admin")
+    @PreAuthorize("hasAuthority('SCOPE_ADMIN')")
+    public ResponseEntity<String> adminEndpoint(JwtAuthenticationToken jwtAuthenticationToken) {
+        return ResponseEntity.ok("Hello " + jwtAuthenticationToken.getName() + "! You are accessing a admin end point. Admin access granted.");
+    }
+
+    //to learn jwt, remove logout
+/*    @PostMapping("/logout")
+    public ResponseEntity<String> logout(@RequestBody LogoutRequestDto logoutRequestDto) {
+        *//* logout - logout means you invalidate the token / close the session / send back to the login page / delete the token not recommended because you to back trace
+        save all the information(of course, you already saved when you log in actually) to keep backtrack if something wrong*//*
+
+        *//*Just I want to return if the logout is successful or not, so I'll use ResponseEntity - This itself say HTTP status whether it is HTTPStatus.OK (or) NOTFOUND
+        Here expire the token, once expired user redirected to login page and, he will ask to log in again (i.e) generated a new token and use this token for their related particular session*//*
         userService.logout(logoutRequestDto.getTokenValue());
-        /*Use any return statement(see below), but understand the difference.
+        *//*Use any return statement(see below), but understand the difference.
 
         return ResponseEntity.status(HttpStatus.OK).body("Logged out successfully");
         return ResponseEntity.noContent().build();
-        return new ResponseEntity<>(HttpStatus.OK);*/
+        return new ResponseEntity<>(HttpStatus.OK);*//*
         return ResponseEntity.ok("Expiry date is changed when logged out. It will be current expiry date and please check in token database table");//Here also, HTTP status is 200 OK
+    }*/
 
-
-    }
-
-    @GetMapping("/validate/{token}")//For validate the token, provide the token actually
+    //to learn jwt, remove validateToken
+/*    @GetMapping("/validate/{token}")//For validate the token, provide the token actually
     //Now, pass the parameter as @PathVariable
     public ResponseEntity<UserDto> validateToken(@PathVariable("token") String tokenValue){
-        /*Return the ResponseEntity with UserDto
+        *//*Return the ResponseEntity with UserDto
         if token is validated then return the particular user
         return type is UserDto. So, create the userDto from  user object and then return it back to the client
-        Converting from user to UserDto and return it back to the Client...*/
+        Converting from user to UserDto and return it back to the Client...*//*
         User user = userService.validateToken(tokenValue);
         if(user == null){
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);//resource not found. NOT_FOUND = 404
         }
         return new ResponseEntity<>(UserDto.from(user), HttpStatus.OK);//OK = 200
-    }
+    }*/
 
 }
