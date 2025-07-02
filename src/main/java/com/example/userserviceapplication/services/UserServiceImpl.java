@@ -1,11 +1,15 @@
 package com.example.userserviceapplication.services;
 
+import com.example.userserviceapplication.dtos.SendEmailDto;
 import com.example.userserviceapplication.exceptions.InvalidPasswordException;
 import com.example.userserviceapplication.models.Token;
 import com.example.userserviceapplication.models.User;
 import com.example.userserviceapplication.repositories.TokenRepository;
 import com.example.userserviceapplication.repositories.UserRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -16,16 +20,26 @@ import java.util.Optional;
 //Once marked the @Service, spring creates the bean of type UserServiceImpl
 //spring created the dependency graph at background. This is like topological sort...
 public class UserServiceImpl implements UserService {
-    private UserRepository userRepository;
-    private BCryptPasswordEncoder bCryptPasswordEncoder;
-    private TokenRepository tokenRepository;
+    //The following lines we write because we don't need to write new objects every time
+    private final UserRepository userRepository;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final TokenRepository tokenRepository;
+    private final KafkaTemplate<String, String> kafkaTemplate;
+    private ObjectMapper objectMapper;
+
 
     //spring boot not going to create bean for bCryptPasswordEncoder type and make it available during the program execution. So, create bean in configs(See the configs package)
     //now inject the dependency of BCryptPasswordEncoder after creating the bean in AppConfig class
-    public UserServiceImpl(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder, TokenRepository tokenRepository) {
+    public UserServiceImpl(UserRepository userRepository,
+                           BCryptPasswordEncoder bCryptPasswordEncoder,
+                           TokenRepository tokenRepository,
+                           KafkaTemplate<String, String> kafkaTemplate,
+                           ObjectMapper objectMapper) {
         this.userRepository = userRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.tokenRepository = tokenRepository;
+        this.kafkaTemplate = kafkaTemplate;
+        this.objectMapper = objectMapper;
     }
 /*
     @Override
@@ -93,7 +107,7 @@ public class UserServiceImpl implements UserService {
 */
     //To learn jwt, let's have signUp method only...So, I comment others...
     @Override
-    public User signUp(String username, String email, String password) {
+    public User signUp(String username, String email, String password) throws JsonProcessingException {
         /*Don't use this here -> BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
         Create the bean in separate class. See AppConfig class
         1)To signup, first create the user. Then do we need to check user already exist or not? YES
@@ -112,9 +126,39 @@ public class UserServiceImpl implements UserService {
         //now we have instinct of bCryptPasswordEncoder, we should be able to use it to encode the password.
         //password store it in the encoded format
         user.setPassword(bCryptPasswordEncoder.encode(password));
+
+        /*
+        First push an event to kafka saying that this is an event whoever wants to consume this event can subscribe to this particular topic which I am going to push
+        So, to learn kafka, first push an event to kafka which the EmailService will read and EmailService will send a "welcome email" to the  user
+        First connect to kafka, so add dependency in pom.xml then use kafka template.
+        -> Kafka template has key and value. Key is topic and Value is Data/Event/Message
+        -> User Service talking to instance of Kafka that is running on your system(either different port). Here so send it in a
+           string format because it is serialized in string and later deserialize in EmailService
+        */
+        //kafkaTemplate(which "topic" to send, what "data" to send)
+        //If we want to send data over networks, then we need Dto object
+
+        //create sendEmailDto which has to be sent to the email service
+        SendEmailDto sendEmailDto = new SendEmailDto();
+        //get the email details of user who has signed up and set the email
+        sendEmailDto.setEmail(user.getEmail());
+        sendEmailDto.setSubject("Welcome to Scaler");
+        sendEmailDto.setBody("Happy to have you onboard. Your journey starts today...");
+        /*
+        now serialize the above particular sendEmailDto data in JSON format, and you convert it into string, and you deserialize it in Email Service
+        writValueAsString() method can be used to serialize any Java value as a String format and send it through the kafka
+        To serialize and deserialize data in java, we use library called jackson. Jackson provides something called as Object Mapper
+        This is the way of userService to push an event to kafka and send email. This is not going to wait and it is asynchronous. This will do the following line and save the user in userRepository then return.
+        //JsonProcessingException occurs because of writeValueAsString
+        */
+        kafkaTemplate.send(
+                "sendEmail",
+                objectMapper.writeValueAsString(sendEmailDto)
+        );
+
+
         savedUser = userRepository.save(user);
         return savedUser;
-
         //or return directly as
         //return userRepository.save(user);
 

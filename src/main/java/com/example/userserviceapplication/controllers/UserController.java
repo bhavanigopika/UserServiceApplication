@@ -12,6 +12,7 @@ import com.example.userserviceapplication.models.Token;
 import com.example.userserviceapplication.models.User;
 import com.example.userserviceapplication.repositories.TokenRepository;
 import com.example.userserviceapplication.services.UserService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -68,7 +69,7 @@ public class UserController {
     //Client must use OAuth flow to get jwt tokens (i.e) handled by configurations that we are provided
     //I don't need to create tokens myself whenever I use login...(Earlier we did this)
     @PostMapping("/signup")
-    public UserDto signUp(@RequestBody SignUpRequestDto signUpRequestDto) {
+    public UserDto signUp(@RequestBody SignUpRequestDto signUpRequestDto) throws JsonProcessingException {
     /*
         //Return the user information in SignUpResponseDto
         UserDto signUpResponseDto = new UserDto();

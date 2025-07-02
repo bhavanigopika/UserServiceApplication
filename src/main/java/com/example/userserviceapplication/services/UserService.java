@@ -3,6 +3,7 @@ package com.example.userserviceapplication.services;
 import com.example.userserviceapplication.exceptions.InvalidPasswordException;
 import com.example.userserviceapplication.models.Token;
 import com.example.userserviceapplication.models.User;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.stereotype.Service;
 
 
@@ -10,7 +11,7 @@ public interface UserService {
     //For JWT, signUp method is enough
     //public Token login(String email, String password) throws InvalidPasswordException;//Once login successful, return the Token
 
-    public User signUp(String username, String email, String password);
+    public User signUp(String username, String email, String password) throws JsonProcessingException;
 
     //public void logout(String tokenValue);
 
