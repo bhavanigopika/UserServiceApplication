@@ -110,7 +110,7 @@ public class UserController {
     //In security config, you already mentioned that anything starts with /users/admin/** then it should have authority "SCOPE_ADMIN", then only you allow it
     //(i.e) .requestMatchers("/users/admin/**").hasAuthority("SCOPE_ADMIN") -> so you preauthorize, if they have this, one will be able to access this endpoint
     @GetMapping("/admin")
-    @PreAuthorize("hasAuthority('SCOPE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN')")
     public ResponseEntity<String> adminEndpoint(JwtAuthenticationToken jwtAuthenticationToken) {
         return ResponseEntity.ok("Hello " + jwtAuthenticationToken.getName() + "! You are accessing a admin end point. Admin access granted.");
     }

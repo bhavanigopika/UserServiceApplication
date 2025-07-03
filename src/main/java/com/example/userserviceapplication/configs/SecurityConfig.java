@@ -76,7 +76,8 @@ public class SecurityConfig {
                 .securityMatcher(authorizationServerConfigurer.getEndpointsMatcher())
                 .with(authorizationServerConfigurer, (authorizationServer) ->
                         authorizationServer
-                                .oidc(Customizer.withDefaults())	// Enable OpenID Connect 1.0
+                                /*Enable OpenID Connect 1.0*/
+                                .oidc(Customizer.withDefaults())
                 )
                 .authorizeHttpRequests((authorize) ->
                         authorize
@@ -100,8 +101,9 @@ public class SecurityConfig {
     public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http) throws Exception {
         http
                 /*let us define security matcher explicitly now to match our API request and authorize depending on our matches*/
-                .securityMatcher("/users/**")//only match our API request
-                .authorizeHttpRequests(authorize -> authorize
+                /*only match our API request*/
+                .securityMatcher("/users/**")
+                .authorizeHttpRequests((authorize) -> authorize
 
                         /*let we also authorize depending on our matches and permit all for users/signup means allow signup without token*/
                         .requestMatchers("/users/signup").permitAll()
@@ -117,9 +119,9 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
-//                .csrf(csrf -> csrf.disable())
-//                .cors(cors -> cors.disable());
-                //Change the above 2 line with lambda method reference
+                /*.csrf(csrf -> csrf.disable())*/
+                /*.cors(cors -> cors.disable());*/
+                /*Change the above 2 line with lambda method reference*/
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(AbstractHttpConfigurer::disable);
 
@@ -151,10 +153,10 @@ public class SecurityConfig {
     @Order(3)
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception{
         http
-                .authorizeHttpRequests(authorize -> authorize
-                        //if request matchers with login, error or css etc., then permit all
+                .authorizeHttpRequests(auth -> auth
+                        /*if request matchers with login, error or css etc., then permit all*/
                         .requestMatchers("/login", "/error", "/css/**", "/js/**").permitAll()
-                        //then it should be authenticated
+                        /*then it should be authenticated*/
                         .anyRequest().authenticated()
                 )
                 .formLogin(Customizer.withDefaults());
@@ -168,7 +170,7 @@ public class SecurityConfig {
         UserDetails userDetails = User.builder()/*withDefaultPasswordEncoder()*/
                 .username("user")
                 /*.password("password")*/
-                //provide bcrypt password for "password"...Get it from bcrypt hash generator website
+                /*provide bcrypt password for "password"...Get it from bcrypt hash generator website*/
                 .password("$2a$12$9JKvv/R3PXl95.edTdUeGup/9PpWNQ2J5V7EdktzuPTXEqSCwGPP2")
                 .roles("USER")
                 .build();
@@ -183,18 +185,19 @@ public class SecurityConfig {
     public RegisteredClientRepository registeredClientRepository() {
         RegisteredClient oidcClient = RegisteredClient.withId(UUID.randomUUID().toString())
                 .clientId("oidc-client")
-                .clientSecret("{noop}secret")
+                /*bcrypt generator for "secret" -> "$2a$12$qQyXox0IqcMX29skIBlToOzLqa4CuNt1MWqu02PESz9wNc0cPSZZS"*/
+                .clientSecret("$2a$12$qQyXox0IqcMX29skIBlToOzLqa4CuNt1MWqu02PESz9wNc0cPSZZS")
                 .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
                 .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
                 .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
-                /*.redirectUri("http://127.0.0.1:8080/login/oauth2/code/oidc-client")
-                .postLogoutRedirectUri("http://127.0.0.1:8080/")*/
-                //change redirect uri to postman
+                /*.redirectUri("http://127.0.0.1:8080/login/oauth2/code/oidc-client")*/
+                /*.postLogoutRedirectUri("http://127.0.0.1:8080/")*/
+                /*change redirect uri to postman*/
                 .redirectUri("https://oauth.pstmn.io/v1/callback")
                 .postLogoutRedirectUri("https://oauth.pstmn.io/v1/callback")
                 .scope(OidcScopes.OPENID)
                 .scope(OidcScopes.PROFILE)
-                //let's add one more scope for us. See in postman also
+                /*let's add one more scope for us. See in postman also*/
                 .scope("ADMIN")
                 .clientSettings(ClientSettings.builder().requireAuthorizationConsent(true).build())
                 .build();
