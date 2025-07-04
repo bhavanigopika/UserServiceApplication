@@ -11,7 +11,7 @@ public interface UserService {
     //For JWT, signUp method is enough
     //public Token login(String email, String password) throws InvalidPasswordException;//Once login successful, return the Token
 
-    public User signUp(String username, String email, String password) throws JsonProcessingException;
+    User signUp(String username, String email, String password) throws JsonProcessingException;
 
     //public void logout(String tokenValue);
 
@@ -19,6 +19,6 @@ public interface UserService {
     //public User validateToken(String tokenValue);
 
     //let's authenticate the user
-    public User authenticateUser(String email, String password);
+    User authenticateUser(String email, String password);
     User getUserByEmail(String email);
 }

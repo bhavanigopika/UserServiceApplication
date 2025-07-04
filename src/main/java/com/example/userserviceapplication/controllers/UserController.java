@@ -115,6 +115,15 @@ public class UserController {
         return ResponseEntity.ok("Hello " + jwtAuthenticationToken.getName() + "! You are accessing a admin end point. Admin access granted.");
     }
 
+    //Now, from product service let's call the user service in a load balanced way
+    //So, let's do sample API to understand how this service works in a load balanced way. Refer ProductServiceDecember2024 application, particularly productService class
+    @GetMapping("/sample")
+    public void sampleAPI(){
+        System.out.println("This is the sample API request.");
+        System.out.println("Now, to understand how to call from one microservice to another microservice with the help of Eureka Server/Service Discovery? I used to call from product service to user service");
+        System.out.println("I give this GET request in Postman http://localhost:7070/product/1");
+        System.out.println("Yes. It is successfully called");
+    }
     //to learn jwt, remove logout
 /*    @PostMapping("/logout")
     public ResponseEntity<String> logout(@RequestBody LogoutRequestDto logoutRequestDto) {

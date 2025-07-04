@@ -95,21 +95,25 @@ public class SecurityConfig {
         return http.build();
     }
 
+    //Here, we authorize only users/signup and users/signup and for other api, we need authorization which means we need JWT
+    //Now, to understand calling from product service to user service, I just comment the apiSecurityFilterChain() method
+
     //define on extra bean named as apiSecurityFilterChain
+/*
     @Bean
     @Order(2)
     public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http) throws Exception {
         http
-                /*let us define security matcher explicitly now to match our API request and authorize depending on our matches*/
-                /*only match our API request*/
+                *//*let us define security matcher explicitly now to match our API request and authorize depending on our matches*//*
+                *//*only match our API request*//*
                 .securityMatcher("/users/**")
                 .authorizeHttpRequests((authorize) -> authorize
 
-                        /*let we also authorize depending on our matches and permit all for users/signup means allow signup without token*/
+                        *//*let we also authorize depending on our matches and permit all for users/signup means allow signup without token*//*
                         .requestMatchers("/users/signup").permitAll()
-                        /*but if the request matchers /users/admin/anything else -> it has to have "hasAuthority" which is "SCOPE_ADMIN" -> then allow it to particular request*/
+                        *//*but if the request matchers /users/admin/anything else -> it has to have "hasAuthority" which is "SCOPE_ADMIN" -> then allow it to particular request*//*
                         .requestMatchers("/users/admin/**").hasAuthority("SCOPE_ADMIN")
-                        /*all other request apart from above requestMatchers should authenticate which means all other end points will require JWT*/
+                        *//*all other request apart from above requestMatchers should authenticate which means all other end points will require JWT*//*
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
@@ -119,14 +123,15 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
-                /*.csrf(csrf -> csrf.disable())*/
-                /*.cors(cors -> cors.disable());*/
-                /*Change the above 2 line with lambda method reference*/
+                *//*.csrf(csrf -> csrf.disable())*//*
+                *//*.cors(cors -> cors.disable());*//*
+                *//*Change the above 2 line with lambda method reference*//*
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(AbstractHttpConfigurer::disable);
 
         return http.build();
     }
+*/
 
     /*
     @Bean
@@ -145,25 +150,30 @@ public class SecurityConfig {
     }
    */
 
+    //Here, we authorize only /login, /error, /css, /js and for other api, we need authorization which means we need JWT
+    //Now, to understand calling from product service to user service, I just comment the defaultSecurityFilterChain() method
+
     //Earlier the code as like above. Now, change it as below
     //Add filter chain for login page and static resources
     //Any other not related API request (i.e) default Security Filter Chain the go to this endpoint.
     //how we say not related API request? Because API request starts with "/users"(Initial end point). In default Security Filter Chain, we don't said as "/users" API
+/*
+
     @Bean
     @Order(3)
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception{
         http
                 .authorizeHttpRequests(auth -> auth
-                        /*if request matchers with login, error or css etc., then permit all*/
+                        *//*if request matchers with login, error or css etc., then permit all*//*
                         .requestMatchers("/login", "/error", "/css/**", "/js/**").permitAll()
-                        /*then it should be authenticated*/
+                        *//*then it should be authenticated*//*
                         .anyRequest().authenticated()
                 )
                 .formLogin(Customizer.withDefaults());
 
         return http.build();
     }
-
+*/
 
     @Bean
     public UserDetailsService userDetailsService() {
