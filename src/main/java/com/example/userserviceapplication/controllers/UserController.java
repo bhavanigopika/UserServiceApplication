@@ -117,6 +117,9 @@ public class UserController {
 
     //Now, from product service let's call the user service in a load balanced way
     //So, let's do sample API to understand how this service works in a load balanced way. Refer ProductServiceDecember2024 application, particularly productService class
+    /*
+    Next case: Calling from APIGateway application(Refer the ApiGateway application) -> Use this link in postman:http://localhost:9090/users/sample -> Yes, it works
+     */
     @GetMapping("/sample")
     public void sampleAPI(){
         System.out.println("This is the sample API request.");
